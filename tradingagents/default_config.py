@@ -19,4 +19,13 @@ DEFAULT_CONFIG = {
     "max_recur_limit": 100,
     # Tool settings
     "online_tools": True,
+    # Trading settings
+    "enable_real_trading": False,  # Set to True for real trading
+    "broker": "etrade",
+    "sandbox_mode": True,  # Use sandbox for testing
+    # Risk management settings
+    "max_position_size": 1000,  # Max $ per position
+    "max_daily_loss": 500,  # Max daily loss in $
+    "max_portfolio_risk": 0.02,  # 2% max portfolio risk
+    "default_order_size": 10,  # Default shares to trade
 }

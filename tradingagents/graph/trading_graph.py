@@ -21,6 +21,7 @@ from tradingagents.agents.utils.agent_states import (
     RiskDebateState,
 )
 from tradingagents.dataflows.interface import set_config
+from tradingagents.execution.trading_executor import TradingExecutor
 
 from .conditional_logic import ConditionalLogic
 from .setup import GraphSetup
@@ -82,6 +83,9 @@ class TradingAgentsGraph:
         # Create tool nodes
         self.tool_nodes = self._create_tool_nodes()
 
+        # Initialize trading executor
+        self.trading_executor = TradingExecutor(self.config)
+        
         # Initialize components
         self.conditional_logic = ConditionalLogic()
         self.graph_setup = GraphSetup(
@@ -186,8 +190,18 @@ class TradingAgentsGraph:
         # Log state
         self._log_state(trade_date, final_state)
 
+        # Process the final decision
+        decision = self.process_signal(final_state["final_trade_decision"])
+        
+        # Execute trade if real trading is enabled
+        if self.config.get("enable_real_trading", False):
+            execution_result = self.trading_executor.execute_decision(
+                decision, company_name
+            )
+            print(f"TRADE EXECUTION RESULT: {execution_result}")
+        
         # Return decision and processed signal
-        return final_state, self.process_signal(final_state["final_trade_decision"])
+        return final_state, decision
 
     def _log_state(self, trade_date, final_state):
         """Log the final state to a JSON file."""
@@ -252,3 +266,15 @@ class TradingAgentsGraph:
     def process_signal(self, full_signal):
         """Process a signal to extract the core decision."""
         return self.signal_processor.process_signal(full_signal)
+    
+    def get_account_info(self):
+        """Get account information from the trading executor."""
+        return self.trading_executor.get_account_info()
+    
+    def get_positions(self):
+        """Get current positions from the trading executor."""
+        return self.trading_executor.get_positions()
+    
+    def get_risk_summary(self):
+        """Get risk summary from the trading executor."""
+        return self.trading_executor.get_risk_summary()
